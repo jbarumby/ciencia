@@ -111,7 +111,15 @@
   .history-actions{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap}
   .chip{display:inline-block; padding:3px 10px; background:#eef2ff; color:var(--primary); border-radius:20px; font-size:.78rem; font-weight:600}
   .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-  @media(max-width:720px){.grid-2{grid-template-columns:1fr}}
+  .lab-layout{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.6fr);gap:18px;align-items:start}
+  .concept-card{padding:16px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(145deg,#f8faff,#eef7ff)}
+  .concept-card h3{margin:0 0 7px;font-size:1rem;color:var(--primary)}
+  .formula{font-family:'Cambria Math',serif;background:#fff;padding:10px;border-radius:8px;color:#312e81;margin:10px 0}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-top:14px}
+  .metric{padding:12px;border-radius:10px;background:#fff;border:1px solid var(--border)}
+  .metric span{display:block;color:var(--muted);font-size:.76rem}.metric strong{font-size:1.05rem;color:var(--primary)}
+  .live-note{color:var(--ok);font-size:.82rem;font-weight:600;margin:0 0 14px}
+  @media(max-width:720px){.grid-2,.lab-layout{grid-template-columns:1fr}main{padding:16px}header{padding:18px}.tabs{padding:10px}.tab{padding:8px 11px}}
 </style>
 </head>
 <body>
@@ -125,6 +133,7 @@
   <button class="tab" data-tab="derivadas">📈 Derivadas & Cinemática</button>
   <button class="tab" data-tab="integrais">∫ Integrais & Trabalho</button>
   <button class="tab" data-tab="simuladores">🚀 Simuladores</button>
+  <button class="tab" data-tab="fisica">⚛️ Física Universitária</button>
   <button class="tab" data-tab="numeros">🔢 Teoria dos Números</button>
   <button class="tab" data-tab="historico">📋 Histórico & Exportação</button>
 </nav>
@@ -217,6 +226,34 @@
       <button class="btn" onclick="simObl()">Simular Lançamento</button>
       <div id="obl-result"></div>
       <div id="obl-plot" class="plot"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FÍSICA UNIVERSITÁRIA -->
+<section class="tab-content" id="fisica">
+  <div class="panel">
+    <h2>⚛️ Laboratório de Física Universitária</h2>
+    <p class="sub">Modelos numéricos para Mecânica, Oscilações, Circuitos e Ondas. Altere os parâmetros: o gráfico e os indicadores são atualizados automaticamente.</p>
+    <div class="lab-layout">
+      <aside class="concept-card">
+        <h3>Experimento</h3>
+        <label for="lab-model">Selecione o modelo</label>
+        <select id="lab-model">
+          <option value="inclined">Plano inclinado com atrito</option>
+          <option value="spring">Massa–mola amortecida</option>
+          <option value="rc">Circuito RC — carga do capacitor</option>
+          <option value="wave">Onda harmônica progressiva</option>
+        </select>
+        <div id="lab-theory"></div>
+      </aside>
+      <div>
+        <p class="live-note">● Simulação dinâmica — atualiza 350 ms após cada alteração.</p>
+        <div class="form-row" id="lab-fields"></div>
+        <button class="btn" id="lab-run" type="button">Atualizar simulação</button>
+        <div id="lab-result"></div>
+        <div id="lab-plot" class="plot"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -360,9 +397,10 @@ function str(id){
 }
 
 /* ============ HISTÓRICO ============ */
-let history=[];
+let history=JSON.parse(localStorage.getItem('scicalc-history')||'[]');
 function addHist(tab,input,result){
   history.push({n:history.length+1, time:new Date().toLocaleTimeString('pt-BR'), tab, input, result});
+  localStorage.setItem('scicalc-history',JSON.stringify(history));
   renderHist();
 }
 function renderHist(){
@@ -370,7 +408,7 @@ function renderHist(){
   tb.innerHTML=history.map(h=>`<tr><td>${h.n}</td><td>${h.time}</td><td><span class="chip">${h.tab}</span></td><td>${h.input}</td><td>${h.result}</td></tr>`).join('');
   document.getElementById('hist-count').textContent=history.length+' registros';
 }
-function limparHistorico(){ history=[]; renderHist(); toast('Histórico limpo','ok'); }
+function limparHistorico(){ history=[]; localStorage.removeItem('scicalc-history'); renderHist(); toast('Histórico limpo','ok'); }
 function exportarHistorico(){
   if(!history.length){ toast('Histórico vazio','warn'); return; }
   let txt='═══════════════════════════════════════════\n';
@@ -577,6 +615,56 @@ function simObl(){
   }catch(e){ toast(e.message,'err'); }
 }
 
+/* ============ LABORATÓRIO UNIVERSITÁRIO ============ */
+const labs={
+  inclined:{title:'Plano inclinado com atrito',formula:'a = g(sen θ − μ cos θ)',description:'Avalia o movimento de um bloco em uma rampa. Se a aceleração for negativa, o atrito estático/dinâmico supera a componente do peso.',fields:[['massa','Massa m (kg)',2,.1],['angulo','Ângulo θ (graus)',30,0],['mu','Coeficiente de atrito μ',.2,0],['tempo','Tempo observado (s)',5,.1]]},
+  spring:{title:'Massa–mola amortecida',formula:'m x″ + b x′ + kx = 0',description:'A solução é calculada para os regimes subamortecido, crítico e superamortecido.',fields:[['massa','Massa m (kg)',1,.01],['k','Constante elástica k (N/m)',16,.01],['b','Amortecimento b (N·s/m)',1,0],['x0','Deslocamento inicial x₀ (m)',.2,.001],['tempo','Janela temporal (s)',10,.1]]},
+  rc:{title:'Circuito RC — carga',formula:'V_C(t) = V₀(1 − e^(−t/RC))',description:'Mostra a carga do capacitor e a corrente em um circuito de corrente contínua.',fields:[['v','Tensão V₀ (V)',12,.01],['r','Resistência R (Ω)',1000,.01],['c','Capacitância C (µF)',100,.001],['tempo','Janela temporal (s)',.8,.001]]},
+  wave:{title:'Onda harmônica progressiva',formula:'y(x,t) = A sen(kx − ωt + φ)',description:'Visualiza o perfil espacial em um instante e informa as grandezas de propagação.',fields:[['amp','Amplitude A (m)',.5,.001],['lambda','Comprimento de onda λ (m)',2,.001],['freq','Frequência f (Hz)',1,.001],['time','Instante t (s)',0,.001]]}
+};
+const linspace=(start,end,count)=>Array.from({length:count},(_,i)=>start+(end-start)*i/(count-1));
+const labValue=id=>Number(document.getElementById('lab-'+id).value);
+const fmt=(value,unit='')=>`${Number(value).toPrecision(5)}${unit?' '+unit:''}`;
+function setupLab(){
+  const model=labs[document.getElementById('lab-model').value];
+  document.getElementById('lab-theory').innerHTML=`<h3>${model.title}</h3><p>${model.description}</p><div class="formula">${model.formula}</div>`;
+  document.getElementById('lab-fields').innerHTML=model.fields.map(([id,label,value,min])=>`<div><label for="lab-${id}">${label}</label><input id="lab-${id}" type="number" value="${value}" min="${min}" step="any"></div>`).join('');
+  document.querySelectorAll('#lab-fields input').forEach(input=>input.addEventListener('input',scheduleLab));
+  runLab();
+}
+let labTimer;
+function scheduleLab(){clearTimeout(labTimer);labTimer=setTimeout(runLab,350);}
+function labOutput(metrics){return `<div class="metric-grid">${metrics.map(([label,value])=>`<div class="metric"><span>${label}</span><strong>${value}</strong></div>`).join('')}</div>`;}
+function runLab(){
+  try{
+    const model=document.getElementById('lab-model').value;
+    let x,y,trace,title,xTitle,yTitle,metrics;
+    if(model==='inclined'){
+      const m=labValue('massa'),theta=labValue('angulo')*Math.PI/180,mu=labValue('mu'),T=labValue('tempo'),g=9.80665;
+      if(m<=0||T<=0||mu<0) throw Error('Use massa e tempo positivos, com atrito não negativo.');
+      const a=g*(Math.sin(theta)-mu*Math.cos(theta)), ts=linspace(0,T,240), s=ts.map(t=>Math.max(0,.5*a*t*t));
+      x=ts;y=s;title='Posição ao longo do plano';xTitle='tempo (s)';yTitle='posição (m)';trace='s(t)';metrics=[['Aceleração',fmt(a,'m/s²')],['Força resultante',fmt(m*a,'N')],['Velocidade final',fmt(a*T,'m/s')],['Regime',a>0?'desliza para baixo':'não desliza sem impulso']];
+    } else if(model==='spring'){
+      const m=labValue('massa'),k=labValue('k'),b=labValue('b'),x0=labValue('x0'),T=labValue('tempo');
+      if(m<=0||k<=0||b<0||T<=0) throw Error('m, k e tempo devem ser positivos; b não pode ser negativo.');
+      const gamma=b/(2*m), w0=Math.sqrt(k/m), disc=w0*w0-gamma*gamma, ts=linspace(0,T,500); let regime;
+      y=ts.map(t=>{if(disc>1e-10){const wd=Math.sqrt(disc);regime='subamortecido';return x0*Math.exp(-gamma*t)*(Math.cos(wd*t)+gamma/wd*Math.sin(wd*t));}if(Math.abs(disc)<=1e-10){regime='crítico';return x0*(1+gamma*t)*Math.exp(-gamma*t);}const q=Math.sqrt(-disc);regime='superamortecido';return x0*Math.exp(-gamma*t)*(Math.cosh(q*t)+gamma/q*Math.sinh(q*t));});
+      x=ts;title='Resposta do oscilador amortecido';xTitle='tempo (s)';yTitle='deslocamento (m)';trace='x(t)';metrics=[['Frequência natural',fmt(w0/(2*Math.PI),'Hz')],['Razão de amortecimento',fmt(gamma/w0)],['Regime',regime],['x final',fmt(y.at(-1),'m')]];
+    } else if(model==='rc'){
+      const V=labValue('v'),R=labValue('r'),C=labValue('c')*1e-6,T=labValue('tempo'); if(V<0||R<=0||C<=0||T<=0) throw Error('Use V ≥ 0 e R, C e tempo positivos.');
+      const tau=R*C,ts=linspace(0,T,300); x=ts;y=ts.map(t=>V*(1-Math.exp(-t/tau)));title='Carga do capacitor';xTitle='tempo (s)';yTitle='tensão no capacitor (V)';trace='V_C(t)';metrics=[['Constante de tempo τ',fmt(tau,'s')],['V_C final',fmt(y.at(-1),'V')],['Corrente inicial',fmt(V/R,'A')],['Carga final',fmt(C*y.at(-1),'C')]];
+    } else {
+      const A=labValue('amp'),lambda=labValue('lambda'),f=labValue('freq'),t=labValue('time');if(A<0||lambda<=0||f<0) throw Error('A e f não podem ser negativos; λ deve ser positivo.');
+      const k=2*Math.PI/lambda,w=2*Math.PI*f;x=linspace(0,3*lambda,400);y=x.map(pos=>A*Math.sin(k*pos-w*t));title='Perfil espacial da onda';xTitle='posição x (m)';yTitle='deslocamento y (m)';trace='y(x,t)';metrics=[['Velocidade v',fmt(lambda*f,'m/s')],['Número de onda k',fmt(k,'rad/m')],['Frequência angular ω',fmt(w,'rad/s')],['Período',f?fmt(1/f,'s'):'∞']];
+    }
+    document.getElementById('lab-result').innerHTML=labOutput(metrics);
+    Plotly.react('lab-plot',[{x,y,type:'scatter',mode:'lines',name:trace,line:{color:'#4f46e5',width:3},fill:'tozeroy',fillcolor:'rgba(79,70,229,.08)'}],{title,xaxis:{title:xTitle},yaxis:{title:yTitle},paper_bgcolor:'#fafbff',plot_bgcolor:'#fafbff',margin:{t:48}},{responsive:true});
+  }catch(e){toast(e.message,'err');}
+}
+document.getElementById('lab-model').addEventListener('change',setupLab);
+document.getElementById('lab-run').addEventListener('click',runLab);
+setupLab();
+
 /* ============ TEORIA DOS NÚMEROS ============ */
 function isPrime(n){
   if(n<2) return false;
@@ -739,6 +827,7 @@ function funcoesNUI(){
   }catch(e){ toast(e.message,'err'); }
 }
 // Bindings
+renderHist();
 document.querySelector('[onclick="potMod()"]').onclick=potModUI;
 document.querySelector('[onclick="invMod()"]').onclick=invModUI;
 document.querySelector('[onclick="cong()"]').onclick=congUI;
