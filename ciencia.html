@@ -111,6 +111,16 @@
   .history-actions{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap}
   .chip{display:inline-block; padding:3px 10px; background:#eef2ff; color:var(--primary); border-radius:20px; font-size:.78rem; font-weight:600}
   .grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .article{max-width:900px; margin:0 auto; font-family:Georgia,'Times New Roman',serif; line-height:1.7; color:#202938}
+  .article h2,.article h3{font-family:'Segoe UI',system-ui,sans-serif; -webkit-text-fill-color:initial; background:none; color:var(--ink)}
+  .article h2{text-align:center; font-size:1.65rem; margin-bottom:4px}
+  .article h3{margin-top:28px; border-bottom:1px solid var(--border); padding-bottom:7px; font-size:1.08rem}
+  .article .meta{text-align:center; color:var(--muted); font-family:'Segoe UI',system-ui,sans-serif; font-size:.9rem; margin:0 0 24px}
+  .article p{margin:12px 0; text-align:justify}
+  .article .statement{background:#f8faff; border-left:4px solid var(--primary); padding:13px 16px; margin:14px 0; border-radius:0 8px 8px 0}
+  .article .hyp{background:#fffbeb; border-left:4px solid var(--warn); padding:12px 16px; margin:14px 0; border-radius:0 8px 8px 0}
+  .article .limit{background:#fff5f5; border-left:4px solid var(--err); padding:12px 16px; margin:14px 0; border-radius:0 8px 8px 0}
+  .article ol{padding-left:24px}
   @media(max-width:720px){.grid-2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -126,6 +136,7 @@
   <button class="tab" data-tab="integrais">∫ Integrais & Trabalho</button>
   <button class="tab" data-tab="simuladores">🚀 Simuladores</button>
   <button class="tab" data-tab="numeros">🔢 Teoria dos Números</button>
+  <button class="tab" data-tab="artigo">📜 Artigo: Ciclos Gêmeos</button>
   <button class="tab" data-tab="historico">📋 Histórico & Exportação</button>
 </nav>
 
@@ -281,6 +292,60 @@
       <div id="f-result"></div>
     </div>
   </div>
+</section>
+
+<!-- ARTIGO FORMAL -->
+<section class="tab-content" id="artigo">
+  <article class="panel article">
+    <h2>Ciclos Gêmeos na Dinâmica Acelerada de Collatz</h2>
+    <p class="meta">Nota formal — resultados condicionais e verificações finitas explicitamente separados</p>
+    <p>Este texto fixa um enunciado matemático preciso para os resultados confirmados por enumeração. Nenhuma afirmação que exceda as hipóteses declaradas é empregada. Em particular, as conclusões globais abaixo são condicionais à hipótese de descida indicada.</p>
+
+    <h3>1. Definições</h3>
+    <p>Seja <em>v</em><sub>2</sub>(m) o maior inteiro <em>a</em> tal que 2<sup>a</sup> divide <em>m</em>. Denote-se por <em>O</em> o conjunto dos inteiros positivos ímpares e defina-se a aplicação acelerada <em>T</em>: <em>O</em> → <em>O</em> por T(n) = (3n + 1)/2<sup>v₂(3n+1)</sup>. Uma órbita é a sucessão (T<sup>j</sup>(n))<sub>j≥0</sub>. Um ciclo é uma órbita periódica; é não trivial quando não é o ciclo (1). Para B ≥ 1, escreva O<sub>B</sub> = {n ∈ O : n ≤ B}. Um par (p,p+2) é denominado <em>par gêmeo verificado até B</em> quando p e p+2 são primos e, a partir de suas primeiras entradas em O<sub>B</sub>, as duas órbitas atingem 1 sem exceder B.</p>
+
+    <h3>2. Lema da congruência módulo 9</h3>
+    <div class="statement"><strong>Lema 1.</strong> Para todo n ∈ O, 3n + 1 ≡ 1 (mod 3). Logo, 3 não divide 3n+1; na definição de T, o único fator removido de 3n+1 é a potência de 2 determinada por v₂(3n+1).</div>
+    <p><strong>Demonstração.</strong> A igualdade 3n+1 − 1 = 3n mostra 3n+1 ≡ 1 (mod 3); em particular, também 3n+1 ≡ 1, 4 ou 7 (mod 9), conforme n ≡ 0, 1 ou 2 (mod 3). A divisão por uma potência de 2 é legítima módulo 9, pois 2 é invertível nesse módulo. Assim, T(n) pertence à classe 2<sup>−v₂(3n+1)</sup>(3n+1) (mod 9). Nenhuma conclusão de descida decorre apenas desta congruência. ∎</p>
+
+    <h3>3. Lema da descida</h3>
+    <div class="hyp"><strong>Hipótese H<sub>B</sub>.</strong> Existe B ≥ 1 tal que, para todo n ∈ O com n &gt; B, existe j ≥ 1 para o qual T<sup>j</sup>(n) &lt; n.</div>
+    <div class="statement"><strong>Lema 2.</strong> Sob H<sub>B</sub>, toda órbita iniciada em O atinge O<sub>B</sub>.</div>
+    <p><strong>Demonstração.</strong> Fixe n ∈ O. Se n ≤ B, nada há a provar. Se n &gt; B, H<sub>B</sub> fornece um iterado estritamente menor. Reaplique H<sub>B</sub> enquanto o valor corrente exceder B. Obtém-se uma sequência estritamente decrescente de inteiros positivos nos instantes selecionados; pelo bom ordenamento de N, o processo termina. O valor terminal pertence a O<sub>B</sub>. ∎</p>
+
+    <h3>4. Lema da redução finita</h3>
+    <div class="statement"><strong>Lema 3.</strong> Sob H<sub>B</sub>, todo ciclo de T contém um elemento de O<sub>B</sub>.</div>
+    <p><strong>Demonstração.</strong> Seja C um ciclo e escolha seu menor elemento m. Se m &gt; B, H<sub>B</sub> aplicada a m produz um iterado T<sup>j</sup>(m) &lt; m. Como C é fechado por iteração, T<sup>j</sup>(m) pertence a C, contradizendo a minimalidade de m. Portanto, m ≤ B. ∎</p>
+
+    <h3>5. Classificação exaustiva dos ciclos</h3>
+    <p>Considere a verificação finita V<sub>B</sub>: para cada n ∈ O<sub>B</sub>, iterar T até encontrar 1 ou até repetir um valor já observado, registrando a trajetória. A verificação é exaustiva em O<sub>B</sub> porque esse conjunto é finito.</p>
+    <div class="statement"><strong>Proposição 4.</strong> Se V<sub>B</sub> retorna somente o ciclo (1), então, sob H<sub>B</sub>, (1) é o único ciclo de T.</div>
+    <p><strong>Demonstração.</strong> Pelo Lema 3, qualquer ciclo contém um elemento de O<sub>B</sub>. V<sub>B</sub> examina esse elemento e, por hipótese, não registra ciclo distinto de (1). Segue a conclusão. ∎</p>
+
+    <h3>6. Proposição sobre as bacias de atração</h3>
+    <div class="statement"><strong>Proposição 5.</strong> Se H<sub>B</sub> vale e V<sub>B</sub> mostra que toda órbita iniciada em O<sub>B</sub> alcança 1, então a bacia de atração de (1) é O.</div>
+    <p><strong>Demonstração.</strong> Pelo Lema 2, toda órbita encontra um elemento r ∈ O<sub>B</sub>. Pela hipótese sobre V<sub>B</sub>, a órbita de r atinge 1. Pela propriedade semigrupal T<sup>a+b</sup> = T<sup>a</sup>∘T<sup>b</sup>, a órbita original também atinge 1. ∎</p>
+
+    <h3>7. Análise dos primos gêmeos</h3>
+    <div class="statement"><strong>Lema 6.</strong> Se p e p+2 são primos com p &gt; 3, então p ≡ 5 (mod 6) e p+2 ≡ 1 (mod 6).</div>
+    <p><strong>Demonstração.</strong> Um primo maior que 3 não é divisível por 2 nem por 3; portanto é congruente a 1 ou 5 módulo 6. Se p ≡ 1 (mod 6), então p+2 ≡ 3 (mod 6), contradizindo a primalidade de p+2 &gt; 3. Resta p ≡ 5 (mod 6). ∎</p>
+
+    <h3>8. Teorema dos Ciclos Gêmeos</h3>
+    <div class="statement"><strong>Teorema 7.</strong> Fixe B ≥ 1. Suponha H<sub>B</sub> e suponha que V<sub>B</sub> certifica que toda órbita de O<sub>B</sub> alcança 1. Então, para todo par de primos gêmeos (p,p+2), ambas as órbitas convergem para o ciclo (1). Em particular, todo par gêmeo é um par gêmeo verificado até B após sua primeira entrada em O<sub>B</sub>.</div>
+
+    <h3>9. Demonstração completa</h3>
+    <p><strong>Demonstração do Teorema 7.</strong> Se p ∈ {3}, o par é (3,5); se p &gt; 3, o Lema 6 descreve suas classes módulo 6, mas a prova dinâmica não depende dessa descrição. Aplique o Lema 2 separadamente a p e a p+2, usando H<sub>B</sub> em cada caso. Existem índices r,s ≥ 0 tais que T<sup>r</sup>(p), T<sup>s</sup>(p+2) ∈ O<sub>B</sub>. Pela certificação V<sub>B</sub>, existem u,v ≥ 0 com T<sup>u+r</sup>(p)=1 e T<sup>v+s</sup>(p+2)=1. Logo as duas órbitas convergem para (1). Esta conclusão usa somente H<sub>B</sub>, a exatidão de V<sub>B</sub> e a definição de T. ∎</p>
+
+    <h3>10. Corolários</h3>
+    <p><strong>Corolário 8.</strong> Sob as hipóteses do Teorema 7, não existe ciclo não trivial que contenha um primo gêmeo. <strong>Demonstração.</strong> Toda órbita de primo gêmeo alcança 1; uma órbita periódica não trivial não o faz. ∎</p>
+    <p><strong>Corolário 9.</strong> Sob as hipóteses do Teorema 7, a classificação dos ciclos e a afirmação para pares gêmeos são consequências da mesma certificação finita V<sub>B</sub> acrescida de H<sub>B</sub>. ∎</p>
+
+    <h3>11. Limitações</h3>
+    <div class="limit">A Hipótese H<sub>B</sub> não é demonstrada neste texto. Portanto, o Teorema 7 não constitui uma prova incondicional da conjectura de Collatz, nem estabelece a convergência de todos os primos gêmeos sem uma prova independente de H<sub>B</sub>. A congruência módulo 9 restringe classes residuais, mas não prova descida.</div>
+
+    <h3>12. Resultados que permanecem computacionais</h3>
+    <p>A execução de V<sub>B</sub>, a lista dos valores examinados, os limites B efetivamente certificados e a detecção de repetição são resultados computacionais. Para que tenham valor probatório no enunciado condicional, devem ser acompanhados do código, da especificação aritmética exata, do valor de B, de um registro reprodutível da execução e de uma verificação independente. Nenhuma enumeração finita, isoladamente, estabelece H<sub>B</sub> ou uma afirmação universal sobre inteiros não examinados.</p>
+  </article>
 </section>
 
 <!-- HISTÓRICO -->
